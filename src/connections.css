@@ -1,0 +1,211 @@
+.connections-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(3, 6, 10, .76);
+  backdrop-filter: blur(8px);
+}
+
+.connections-modal {
+  width: min(980px, 100%);
+  max-height: calc(100vh - 56px);
+  overflow: auto;
+  border: 1px solid #2a3038;
+  border-radius: 18px;
+  background: #0f1318;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .42);
+}
+
+.connections-modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 26px 20px;
+  border-bottom: 1px solid #242a31;
+}
+
+.connections-modal-header h2 {
+  margin: 3px 0 7px;
+  font-size: 24px;
+  letter-spacing: -.03em;
+}
+
+.connections-modal-header p:last-child {
+  margin: 0;
+  max-width: 680px;
+  color: #828b96;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.connections-modal code,
+.credential-help code {
+  color: #c8d0d8;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.modal-close {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #2d343d;
+  border-radius: 10px;
+  background: #171c22;
+  color: #9ea7b1;
+  cursor: pointer;
+  font-size: 22px;
+}
+
+.credentials-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 22px 26px 12px;
+}
+
+.credential-section {
+  min-width: 0;
+  margin: 0;
+  padding: 18px;
+  border: 1px solid #293039;
+  border-radius: 14px;
+  background: #12171d;
+}
+
+.credential-section legend {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 7px;
+  color: #eef2f5;
+  font-weight: 750;
+  font-size: 13px;
+}
+
+.credential-section legend small {
+  color: #727c87;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.credential-section label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 14px;
+  color: #88929d;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+.credential-section input {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid #303844;
+  border-radius: 9px;
+  outline: none;
+  background: #0d1116;
+  color: #f1f4f7;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.credential-section input:focus {
+  border-color: #687585;
+  box-shadow: 0 0 0 3px rgba(120, 136, 153, .12);
+}
+
+.credential-help {
+  margin-top: 14px;
+  padding: 10px 11px;
+  border-radius: 8px;
+  background: #0c1015;
+  color: #69737e;
+  font-size: 10px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.credential-message {
+  margin: 4px 26px 0;
+  padding: 10px 12px;
+  border: 1px solid #33404b;
+  border-radius: 9px;
+  background: #151c22;
+  color: #c5cdd5;
+  font-size: 11px;
+}
+
+.connections-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 26px 24px;
+}
+
+.connections-modal-actions > span {
+  color: #69737d;
+  font-size: 10px;
+}
+
+.connections-modal-actions > div {
+  display: flex;
+  gap: 9px;
+}
+
+.secondary-button,
+.primary-button {
+  min-height: 40px;
+  padding: 0 15px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.secondary-button {
+  border: 1px solid #303842;
+  background: #151a20;
+  color: #aab3bd;
+}
+
+.primary-button {
+  border: 0;
+  background: #f3f5f7;
+  color: #0b0e12;
+}
+
+.primary-button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.connection-edit-button {
+  border: 1px solid #2d343d;
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: #171c22;
+  color: #8e98a3;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+@media (max-width: 760px) {
+  .connections-modal-backdrop { padding: 12px; }
+  .connections-modal { max-height: calc(100vh - 24px); }
+  .credentials-grid { grid-template-columns: 1fr; padding: 16px; }
+  .connections-modal-header { padding: 18px 16px; }
+  .connections-modal-actions { padding: 16px; align-items: stretch; flex-direction: column; }
+  .connections-modal-actions > div { width: 100%; }
+  .connections-modal-actions button { flex: 1; }
+}
