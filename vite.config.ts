@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { localProviderApi } from './dev-api';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), localProviderApi()],
   clearScreen: false,
   server: {
     strictPort: true,
