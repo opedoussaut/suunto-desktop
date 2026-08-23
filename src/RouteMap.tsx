@@ -117,16 +117,13 @@ export function RouteMap({ route }: Props) {
         });
       }
 
-      const bounds = new map.constructor.prototype.constructor.LngLatBounds?.();
-      // The constructor trick above is intentionally avoided below; MapLibre exposes
-      // fitBounds with a plain LngLatBoundsLike tuple, so compute it directly.
       const lons = route.points.map((point) => point.lon);
       const lats = route.points.map((point) => point.lat);
       const west = Math.min(...lons);
       const east = Math.max(...lons);
       const south = Math.min(...lats);
       const north = Math.max(...lats);
-      void bounds;
+
       map.fitBounds(
         [
           [west, south],
