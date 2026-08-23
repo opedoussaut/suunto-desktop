@@ -17,6 +17,20 @@ interface Props {
   route?: Route;
 }
 
+function getMapStyle() {
+  const mapTilerKey = import.meta.env.VITE_MAPTILER_KEY?.trim();
+
+  // MapTiler Outdoor v4 gives the best hiking/trail experience when configured:
+  // terrain, contours, trails and outdoor POIs. Keep the key local in .env.
+  if (mapTilerKey) {
+    return `https://api.maptiler.com/maps/outdoor-v4/style.json?key=${encodeURIComponent(mapTilerKey)}`;
+  }
+
+  // Keyless high-resolution vector fallback. This is deliberately much sharper
+  // and more useful than MapLibre's demo tiles.
+  return 'https://tiles.openfreemap.org/styles/liberty';
+}
+
 export function RouteMap({ route }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -26,9 +40,10 @@ export function RouteMap({ route }: Props) {
 
     const map = new MapLibreMap({
       container: containerRef.current,
-      style: 'https://demotiles.maplibre.org/style.json',
+      style: getMapStyle(),
       center: [13.2, 68.2],
       zoom: 6.2,
+      maxZoom: 20,
       attributionControl: false,
     });
     map.addControl(new NavigationControl({ showCompass: true }), 'top-right');
@@ -74,7 +89,7 @@ export function RouteMap({ route }: Props) {
 
       const bounds = new LngLatBounds();
       route.points.forEach((point) => bounds.extend([point.lon, point.lat]));
-      map.fitBounds(bounds, { padding: 70, maxZoom: 14, duration: 700 });
+      map.fitBounds(bounds, { padding: 70, maxZoom: 16, duration: 700 });
     };
 
     if (map.loaded()) update();
