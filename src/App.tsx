@@ -2,6 +2,7 @@ import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { parseGpx } from './gpx';
 import { RouteMap } from './RouteMap';
 import { ElevationProfile } from './ElevationProfile';
+import { ConnectionSettings } from './ConnectionSettings';
 import { stravaRouteToRoute, suuntoRouteToRoute } from './providers';
 import type { Connections, Priority, Route } from './types';
 
@@ -31,6 +32,7 @@ export default function App() {
   const [connections, setConnections] = useState<Connections>(emptyConnections);
   const [syncing, setSyncing] = useState(false);
   const [lastSync, setLastSync] = useState<string>();
+  const [showConnectionSettings, setShowConnectionSettings] = useState(false);
 
   const selected = useMemo(
     () => routes.find((route) => route.id === selectedId) ?? routes[0],
@@ -87,37 +89,6 @@ export default function App() {
     // Run only at startup; provider changes are refreshed explicitly after OAuth.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  async function saveProviderConfig(provider: 'strava' | 'suunto') {
-    if (provider === 'strava') {
-      const clientId = window.prompt('Strava Client ID');
-      if (!clientId) return;
-      const clientSecret = window.prompt('Strava Client Secret (stored only under .suunto-desktop on this PC)');
-      if (!clientSecret) return;
-      await fetch('/api/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stravaClientId: clientId.trim(), stravaClientSecret: clientSecret.trim() }),
-      });
-    } else {
-      const clientId = window.prompt('Suunto Partner Client ID');
-      if (!clientId) return;
-      const clientSecret = window.prompt('Suunto Partner Client Secret');
-      if (!clientSecret) return;
-      const subscriptionKey = window.prompt('Suunto Ocp-Apim Subscription Key');
-      if (!subscriptionKey) return;
-      await fetch('/api/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          suuntoClientId: clientId.trim(),
-          suuntoClientSecret: clientSecret.trim(),
-          suuntoSubscriptionKey: subscriptionKey.trim(),
-        }),
-      });
-    }
-    await refreshConnections();
-  }
 
   function connectProvider(provider: 'strava' | 'suunto') {
     const popup = window.open(`/api/${provider}/login`, `${provider}-oauth`, 'width=760,height=820');
@@ -176,6 +147,7 @@ export default function App() {
         </nav>
         <div className="sidebar-footer">
           <div className="device-mini"><span className={watchCount ? 'device-dot connected' : 'device-dot'} /><div><strong>Suunto Race</strong><span>{watchCount ? `${watchCount} routes selected` : 'Cloud state not loaded'}</span></div></div>
+          <button className="settings-button" type="button" onClick={() => setShowConnectionSettings(true)}>Connections & credentials</button>
         </div>
       </aside>
 
@@ -192,12 +164,24 @@ export default function App() {
           <div className="provider-card">
             <span className="provider-mark strava-mark">S</span>
             <div><strong>Strava</strong><span>{connections.strava.connected ? `${stravaCount} routes loaded` : connections.strava.configured ? 'Ready to log in' : 'API app credentials required'}</span></div>
-            {!connections.strava.configured ? <button type="button" onClick={() => void saveProviderConfig('strava')}>Configure</button> : !connections.strava.connected ? <button type="button" onClick={() => connectProvider('strava')}>Log in</button> : <span className="connected-label">● Connected</span>}
+            {!connections.strava.configured ? (
+              <button type="button" onClick={() => setShowConnectionSettings(true)}>Configure</button>
+            ) : !connections.strava.connected ? (
+              <><button className="connection-edit-button" type="button" onClick={() => setShowConnectionSettings(true)}>Edit</button><button type="button" onClick={() => connectProvider('strava')}>Log in</button></>
+            ) : (
+              <><button className="connection-edit-button" type="button" onClick={() => setShowConnectionSettings(true)}>Edit</button><span className="connected-label">● Connected</span></>
+            )}
           </div>
           <div className="provider-card">
             <span className="provider-mark suunto-mark">S</span>
             <div><strong>Suunto Cloud</strong><span>{connections.suunto.connected ? `${suuntoCount} routes · ${watchCount} selected for Race` : connections.suunto.configured ? 'Ready to log in' : 'Partner API credentials required'}</span></div>
-            {!connections.suunto.configured ? <button type="button" onClick={() => void saveProviderConfig('suunto')}>Configure</button> : !connections.suunto.connected ? <button type="button" onClick={() => connectProvider('suunto')}>Log in</button> : <span className="connected-label">● Connected</span>}
+            {!connections.suunto.configured ? (
+              <button type="button" onClick={() => setShowConnectionSettings(true)}>Configure</button>
+            ) : !connections.suunto.connected ? (
+              <><button className="connection-edit-button" type="button" onClick={() => setShowConnectionSettings(true)}>Edit</button><button type="button" onClick={() => connectProvider('suunto')}>Log in</button></>
+            ) : (
+              <><button className="connection-edit-button" type="button" onClick={() => setShowConnectionSettings(true)}>Edit</button><span className="connected-label">● Connected</span></>
+            )}
           </div>
           <div className="last-sync">{lastSync ? `Last sync ${lastSync}` : 'Not synchronized yet'}</div>
         </section>
@@ -249,6 +233,16 @@ export default function App() {
           </div>
         )}
       </main>
+
+      <ConnectionSettings
+        open={showConnectionSettings}
+        connections={connections}
+        onClose={() => setShowConnectionSettings(false)}
+        onSaved={async () => {
+          await refreshConnections();
+          setShowConnectionSettings(false);
+        }}
+      />
     </div>
   );
 }
