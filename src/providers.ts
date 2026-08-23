@@ -10,6 +10,12 @@ interface StravaRoutePayload {
   summaryPolyline?: string | null;
 }
 
+interface SuuntoPoint {
+  latitude: number;
+  longitude: number;
+  altitude?: number;
+}
+
 interface SuuntoRoutePayload {
   sourceId: string;
   name: string;
@@ -17,9 +23,9 @@ interface SuuntoRoutePayload {
   updatedAt?: number;
   watchEnabled: boolean;
   gpx?: string | null;
-  startPoint?: { latitude: number; longitude: number; altitude?: number };
-  centerPoint?: { latitude: number; longitude: number; altitude?: number };
-  endPoint?: { latitude: number; longitude: number; altitude?: number };
+  startPoint?: SuuntoPoint;
+  centerPoint?: SuuntoPoint;
+  endPoint?: SuuntoPoint;
 }
 
 export function decodePolyline(encoded: string): RoutePoint[] {
@@ -98,7 +104,7 @@ export function suuntoRouteToRoute(payload: SuuntoRoutePayload): Route {
   }
 
   const points = [payload.startPoint, payload.centerPoint, payload.endPoint]
-    .filter((point): point is NonNullable<typeof point> => Boolean(point))
+    .filter((point): point is SuuntoPoint => point !== undefined)
     .map((point) => ({ lon: point.longitude, lat: point.latitude, elevation: point.altitude }));
 
   return {
