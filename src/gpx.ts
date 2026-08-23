@@ -37,7 +37,7 @@ export function parseGpx(text: string, fileName: string): Route {
       const lon = Number(node.getAttribute('lon'));
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
       const elevationNode = Array.from(node.children).find(
-        (child) => child.localName === 'ele',
+        (child) => child.localName === 'ele' || child.localName === 'elevation',
       );
       const elevation = elevationNode ? Number(elevationNode.textContent) : undefined;
       return {
@@ -84,5 +84,6 @@ export function parseGpx(text: string, fileName: string): Route {
     sport: 'Hiking / Trail',
     cloudState: 'local',
     watchState: 'local',
+    source: 'local',
   };
 }
