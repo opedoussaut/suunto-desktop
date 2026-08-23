@@ -1,7 +1,17 @@
 import { useEffect, useRef } from 'react';
-import maplibregl, { LngLatBounds } from 'maplibre-gl';
+import {
+  AttributionControl,
+  LngLatBounds,
+  Map as MapLibreMap,
+  NavigationControl,
+  setWorkerUrl,
+  type GeoJSONSource,
+} from 'maplibre-gl';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { Route } from './types';
+
+setWorkerUrl(workerUrl);
 
 interface Props {
   route?: Route;
@@ -9,20 +19,20 @@ interface Props {
 
 export function RouteMap({ route }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    const map = new maplibregl.Map({
+    const map = new MapLibreMap({
       container: containerRef.current,
       style: 'https://demotiles.maplibre.org/style.json',
       center: [13.2, 68.2],
       zoom: 6.2,
       attributionControl: false,
     });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+    map.addControl(new NavigationControl({ showCompass: true }), 'top-right');
+    map.addControl(new AttributionControl({ compact: true }), 'bottom-right');
     mapRef.current = map;
 
     return () => {
@@ -45,7 +55,7 @@ export function RouteMap({ route }: Props) {
         },
       };
 
-      const existing = map.getSource('selected-route') as maplibregl.GeoJSONSource | undefined;
+      const existing = map.getSource('selected-route') as GeoJSONSource | undefined;
       if (existing) {
         existing.setData(data);
       } else {
