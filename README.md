@@ -8,53 +8,47 @@ A modern desktop companion for Suunto users, focused first on route and map mana
 
 ## MVP priorities
 
-1. **Maps & routes**
-   - Import GPX files
-   - Display routes on an interactive map
-   - Show distance, elevation gain/loss and elevation profile
-   - Rename, tag and organize routes
-   - Trip collections and priorities such as P0 / P1 / P2
+1. **Maps & routes** — import GPX, interactive map, distance/elevation, priorities and trips.
+2. **Suunto synchronization** — push supported routes to the user's Suunto account and track sync state.
+3. **Watch** — detect supported devices and progressively add documented direct capabilities.
+4. **Activities & statistics** — workout history, maps, charts and training statistics.
+5. **SuuntoPlus** — explore supported development/deployment workflows.
 
-2. **Suunto synchronization**
-   - Authenticate with the Suunto ecosystem
-   - Push supported routes to the user's Suunto account
-   - Track synchronization state
-   - Make the same route available in the official Suunto mobile app whenever supported by the Suunto API
+## Stack
 
-3. **Watch**
-   - Detect a compatible Suunto watch over supported desktop transports
-   - Show basic device information
-   - Explore supported direct route/app/workout interactions without relying on undocumented behavior for the core MVP
+- Tauri 2
+- React + TypeScript
+- Vite
+- MapLibre GL JS
+- Rust native layer
+- SQLite planned for durable local persistence
 
-4. **Activities & statistics**
-   - Import/read supported workout data
-   - Activity history
-   - Maps, charts and training statistics
+## Run the current scaffold
 
-5. **SuuntoPlus**
-   - Explore supported SuuntoPlus development/deployment workflows
+Prerequisites: Node.js/npm, Rust and the Tauri platform prerequisites for Windows.
 
-## Initial technical direction
+```bash
+npm install
+npm run dev
+```
 
-- **Desktop shell:** Tauri
-- **Frontend:** React + TypeScript
-- **Build tooling:** Vite
-- **Maps:** MapLibre GL JS
-- **Local persistence:** SQLite
-- **Native/device layer:** Rust
-- **Route format:** GPX as the interchange baseline
+Run as a native Tauri window:
+
+```bash
+npm run tauri dev
+```
+
+The first scaffold already supports GPX import, route metrics, interactive map display, route priority/trip metadata and an elevation profile. Suunto cloud/mobile synchronization is intentionally shown but disabled until the official API flow is validated.
 
 ## Architecture principles
 
 - Official APIs and documented protocols first.
-- Local-first route library: the user should retain their GPX data on the PC.
+- Local-first route library.
 - Cloud synchronization is an adapter, not the source of truth.
-- Separate `route`, `map`, `suunto-cloud`, and `device` domains so unsupported Suunto capabilities do not block the rest of the application.
+- Keep route, map, Suunto cloud and device domains separated.
 - Never require reverse-engineered behavior for a critical MVP workflow.
 
-## Repository status
-
-Initial project definition. Application scaffold and first route/map vertical slice are next.
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/MVP.md`](docs/MVP.md).
 
 ## Working name
 
