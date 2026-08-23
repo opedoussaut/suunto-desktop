@@ -1,17 +1,6 @@
-import { useEffect, useRef } from 'react';
-import {
-  AttributionControl,
-  LngLatBounds,
-  Map as MapLibreMap,
-  NavigationControl,
-  setWorkerUrl,
-  type GeoJSONSource,
-} from 'maplibre-gl';
-import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import { useEffect, useRef, useState } from 'react';
+import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
 import type { Route } from './types';
-
-setWorkerUrl(workerUrl);
 
 interface Props {
   route?: Route;
@@ -20,56 +9,97 @@ interface Props {
 function getMapStyle() {
   const mapTilerKey = import.meta.env.VITE_MAPTILER_KEY?.trim();
 
-  // MapTiler Outdoor v4 gives the best hiking/trail experience when configured:
-  // terrain, contours, trails and outdoor POIs. Keep the key local in .env.
   if (mapTilerKey) {
     return `https://api.maptiler.com/maps/outdoor-v4/style.json?key=${encodeURIComponent(mapTilerKey)}`;
   }
 
-  // Keyless high-resolution vector fallback. This is deliberately much sharper
-  // and more useful than MapLibre's demo tiles.
   return 'https://tiles.openfreemap.org/styles/liberty';
+}
+
+function readableError(cause: unknown) {
+  if (cause instanceof Error) return cause.message;
+  return String(cause || 'Unknown map error');
 }
 
 export function RouteMap({ route }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
+  const [mapError, setMapError] = useState<string>();
+  const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    const map = new MapLibreMap({
-      container: containerRef.current,
-      style: getMapStyle(),
-      center: [13.2, 68.2],
-      zoom: 6.2,
-      maxZoom: 20,
-      attributionControl: false,
-    });
-    map.addControl(new NavigationControl({ showCompass: true }), 'top-right');
-    map.addControl(new AttributionControl({ compact: true }), 'bottom-right');
-    mapRef.current = map;
+    let cancelled = false;
+    let createdMap: MapLibreMap | null = null;
+
+    async function startMap() {
+      try {
+        const [maplibre, workerModule] = await Promise.all([
+          import('maplibre-gl'),
+          import('maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'),
+        ]);
+        await import('maplibre-gl/dist/maplibre-gl.css');
+
+        if (cancelled || !containerRef.current) return;
+
+        maplibre.setWorkerUrl(workerModule.default);
+
+        const map = new maplibre.Map({
+          container: containerRef.current,
+          style: getMapStyle(),
+          center: [13.2, 68.2],
+          zoom: 6.2,
+          maxZoom: 20,
+          attributionControl: false,
+        });
+
+        createdMap = map;
+        mapRef.current = map;
+        map.addControl(new maplibre.NavigationControl({ showCompass: true }), 'top-right');
+        map.addControl(new maplibre.AttributionControl({ compact: true }), 'bottom-right');
+
+        map.once('load', () => {
+          if (!cancelled) {
+            setMapReady(true);
+            setMapError(undefined);
+          }
+        });
+
+        map.on('error', (event) => {
+          const message = readableError(event.error);
+          console.error('[suunto-desktop map]', event.error);
+          if (!map.loaded() && !cancelled) setMapError(message);
+        });
+      } catch (cause) {
+        console.error('[suunto-desktop map startup]', cause);
+        if (!cancelled) setMapError(readableError(cause));
+      }
+    }
+
+    void startMap();
 
     return () => {
-      map.remove();
-      mapRef.current = null;
+      cancelled = true;
+      createdMap?.remove();
+      if (mapRef.current === createdMap) mapRef.current = null;
     };
   }, []);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !route) return;
+    if (!map || !route || !mapReady) return;
 
-    const update = () => {
-      const data: GeoJSON.Feature<GeoJSON.LineString> = {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: route.points.map((point) => [point.lon, point.lat]),
-        },
-      };
+    const data: GeoJSON.Feature<GeoJSON.LineString> = {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'LineString',
+        coordinates: route.points.map((point) => [point.lon, point.lat]),
+      },
+    };
 
+    try {
       const existing = map.getSource('selected-route') as GeoJSONSource | undefined;
       if (existing) {
         existing.setData(data);
@@ -87,14 +117,42 @@ export function RouteMap({ route }: Props) {
         });
       }
 
-      const bounds = new LngLatBounds();
-      route.points.forEach((point) => bounds.extend([point.lon, point.lat]));
-      map.fitBounds(bounds, { padding: 70, maxZoom: 16, duration: 700 });
-    };
+      const bounds = new map.constructor.prototype.constructor.LngLatBounds?.();
+      // The constructor trick above is intentionally avoided below; MapLibre exposes
+      // fitBounds with a plain LngLatBoundsLike tuple, so compute it directly.
+      const lons = route.points.map((point) => point.lon);
+      const lats = route.points.map((point) => point.lat);
+      const west = Math.min(...lons);
+      const east = Math.max(...lons);
+      const south = Math.min(...lats);
+      const north = Math.max(...lats);
+      void bounds;
+      map.fitBounds(
+        [
+          [west, south],
+          [east, north],
+        ],
+        { padding: 70, maxZoom: 16, duration: 700 },
+      );
+    } catch (cause) {
+      console.error('[suunto-desktop route rendering]', cause);
+      setMapError(readableError(cause));
+    }
+  }, [route, mapReady]);
 
-    if (map.loaded()) update();
-    else map.once('load', update);
-  }, [route]);
-
-  return <div className="route-map" ref={containerRef} aria-label="Interactive route map" />;
+  return (
+    <div className="route-map-shell">
+      <div className="route-map" ref={containerRef} aria-label="Interactive route map" />
+      {!mapReady && !mapError && (
+        <div className="map-status-overlay">Loading detailed map…</div>
+      )}
+      {mapError && (
+        <div className="map-error-overlay" role="alert">
+          <strong>Map could not start</strong>
+          <span>{mapError}</span>
+          <small>The route library remains usable. Check F12 → Console for details.</small>
+        </div>
+      )}
+    </div>
+  );
 }
