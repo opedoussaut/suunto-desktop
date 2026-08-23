@@ -1,0 +1,31 @@
+.route-map-shell { position: absolute; inset: 0; overflow: hidden; }
+.route-map { position: absolute; inset: 0; min-width: 100%; min-height: 100%; }
+.map-status-overlay, .map-error-overlay { position: absolute; left: 22px; top: 22px; z-index: 5; max-width: 420px; padding: 12px 14px; border: 1px solid #343b44; border-radius: 10px; background: rgba(12,15,18,.94); color: #dce2e8; font-size: 12px; }
+.map-error-overlay { border-color: #71352d; color: #ffb0a2; display: flex; flex-direction: column; gap: 5px; }
+.map-error-overlay small { color: #89929c; }
+.top-actions { display:flex; align-items:center; gap:9px; }
+.sync-all-button { height:42px; padding:0 16px; border:1px solid #333a43; border-radius:9px; background:#181d22; color:#eef2f5; cursor:pointer; font-size:13px; font-weight:700; }
+.sync-all-button:hover:not(:disabled) { background:#22282f; }
+.sync-all-button:disabled { opacity:.45; cursor:not-allowed; }
+.connection-bar { min-height:70px; padding:10px 18px; border-bottom:1px solid #20242a; background:#0f1216; display:flex; gap:10px; align-items:center; }
+.provider-card { min-width:275px; display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:10px; padding:9px 11px; border:1px solid #252c33; border-radius:10px; background:#14181d; }
+.provider-card > div { display:flex; flex-direction:column; min-width:0; }
+.provider-card strong { font-size:12px; }
+.provider-card span { font-size:10px; color:#7f8994; }
+.provider-card button { border:1px solid #343b44; border-radius:7px; background:#20262d; color:#f0f3f6; padding:6px 9px; font-size:10px; cursor:pointer; }
+.provider-card button:hover { background:#2a3139; }
+.provider-mark { width:32px; height:32px; border-radius:8px; display:grid; place-items:center; font-weight:900; }
+.strava-mark { background:#fc4c02; color:white !important; }
+.suunto-mark { background:#e8edf1; color:#0b0d10 !important; }
+.connected-label { color:#79d7a6 !important; white-space:nowrap; }
+.last-sync { margin-left:auto; color:#69737e; font-size:10px; white-space:nowrap; }
+.source-badge { display:inline-flex; width:max-content; align-items:center; padding:3px 6px; border-radius:5px; font-size:8px !important; text-transform:uppercase; letter-spacing:.08em; font-weight:800; margin-top:4px; }
+.source-strava { background:#412116; color:#ff9164 !important; }
+.source-suunto { background:#153638; color:#71d7d7 !important; }
+.source-local { background:#292e34; color:#c4ccd4 !important; }
+.route-row-main .source-badge { margin-top:5px; }
+.route-row-sync.watch-on { color:#72dab0; }
+.device-dot.connected { background:#6bd09e; box-shadow:0 0 0 3px rgba(107,208,158,.12); }
+.detail-empty strong { color:#e8edf1; }
+.detail-empty p { color:#737d88; line-height:1.5; }
+@media (max-width: 1100px) { .connection-bar { flex-wrap:wrap; } .provider-card { min-width:240px; flex:1; } .last-sync { width:100%; margin-left:0; } }
