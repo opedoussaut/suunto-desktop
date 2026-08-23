@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 import type { Connections } from './types';
+import './connections.css';
 
 interface Props {
   open: boolean;
